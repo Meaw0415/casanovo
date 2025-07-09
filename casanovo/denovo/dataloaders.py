@@ -154,13 +154,51 @@ class DeNovoDataModule(pl.LightningDataModule):
             num_workers=self.n_workers,
             shuffle=shuffle,
         )
+    
+    def _make_dpo_loader(
+        self,
+        dataset: torch.utils.data.Dataset,
+        batch_size: int,
+        shuffle: bool = False,
+    ) -> torch.utils.data.DataLoader:
+        """
+        Create a PyTorch DataLoader.
 
+        Parameters
+        ----------
+        dataset : torch.utils.data.Dataset
+            A PyTorch Dataset.
+        batch_size : int
+            The batch size to use.
+        shuffle : bool
+            Option to shuffle the batches.
+
+        Returns
+        -------
+        torch.utils.data.DataLoader
+            A PyTorch DataLoader.
+        """
+        return torch.utils.data.DataLoader(
+            dataset,
+            batch_size=batch_size,
+            collate_fn=prepare_batch,
+            pin_memory=True,
+            num_workers=self.n_workers,
+            shuffle=shuffle,
+        )
+    
     def train_dataloader(self) -> torch.utils.data.DataLoader:
         """Get the training DataLoader."""
         return self._make_loader(
             self.train_dataset, self.train_batch_size, shuffle=True
         )
-
+    def dpo_train_dataloader(self) -> torch.utils.data.DataLoader:
+        """Get the training DataLoader for DPO."""
+        return self._make_dpo_loader(
+            self.train_dataset, self.train_batch_size, shuffle=True
+        )
+    
+    
     def val_dataloader(self) -> torch.utils.data.DataLoader:
         """Get the validation DataLoader."""
         return self._make_loader(self.valid_dataset, self.eval_batch_size)

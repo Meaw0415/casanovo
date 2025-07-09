@@ -16,11 +16,11 @@ isotope_error_range: [0, 1]
 # The minimum length of predicted peptides.
 min_peptide_len: 6
 # Number of spectra in one inference batch.
-predict_batch_size: 1024
+predict_batch_size: 64
 # Number of beams used in beam search.
-n_beams: 1
+n_beams: 10
 # Number of PSMs for each spectrum.
-top_match: 1
+top_match: 10
 # The hardware accelerator to use. Must be one of:
 # "cpu", "gpu", "tpu", "ipu", "hpu", "mps", or "auto".
 accelerator: "auto"
@@ -100,7 +100,7 @@ max_epochs: 30
 num_sanity_val_steps: 0
 # Calculate peptide and amino acid precision during training.
 # This is expensive, so we recommend against it.
-calculate_precision: False
+calculate_precision: True
 
 # AMINO ACID AND MODIFICATION VOCABULARY
 residues:

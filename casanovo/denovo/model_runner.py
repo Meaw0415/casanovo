@@ -123,6 +123,8 @@ class ModelRunner:
         -------
         self
         """
+
+        
         self.initialize_trainer(train=False)
         self.initialize_model(train=False)
 

@@ -174,7 +174,6 @@ def evaluate(
         logger.info("Sequencing and evaluating peptides from:")
         for peak_file in annotated_peak_path:
             logger.info("  %s", peak_file)
-
         runner.evaluate(annotated_peak_path)
 
     logger.info("DONE!")

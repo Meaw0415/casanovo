@@ -13,6 +13,7 @@ import numpy as np
 import lightning.pytorch as pl
 from torch.utils.tensorboard import SummaryWriter
 from depthcharge.components import ModelMixin, PeptideDecoder, SpectrumEncoder
+import torch.nn.functional as F
 
 from . import evaluate
 from .. import config
@@ -144,6 +145,7 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
             ignore_index=0, label_smoothing=train_label_smoothing
         )
         self.val_celoss = torch.nn.CrossEntropyLoss(ignore_index=0)
+        self.dpo_loss = self.dpo_loss
         # Optimizer settings.
         self.warmup_iters = warmup_iters
         self.cosine_schedule_period_iters = cosine_schedule_period_iters
@@ -726,6 +728,15 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
         """
         return self.decoder(sequences, precursors, *self.encoder(spectra))
 
+    def dpo_loss(self, pos_score, neg_score, beta=1.0):
+        # pos_score, neg_score: [B,] 张量
+        logits = beta * (pos_score - neg_score)  # [B,]
+        # DPO标准公式: -log( exp(beta*pos) / [exp(beta*pos) + exp(beta*neg)] )
+        # 等价于: -log(sigmoid(beta * (pos-neg)))
+        loss = -torch.log(torch.sigmoid(logits) + 1e-8)  # 防止log(0)
+        return loss.mean()
+
+
     def training_step(
         self,
         batch: Tuple[torch.Tensor, torch.Tensor, List[str]],
@@ -762,6 +773,55 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
             sync_dist=True,
         )
         return loss
+    
+    def score_sequence(self, spectra, precursors, sequences):
+        """
+        给定谱图、前体信息和目标肽段序列，计算每条肽段的平均 log-probability 作为分数。
+        输入:
+            spectra: [B, n_peaks, 2] torch.Tensor
+            precursors: [B, 3] torch.Tensor
+            sequences: List[str]，长度为B
+        输出:
+            seq_logp: [B,]，每条序列的分数
+        """
+        # 1. 得到模型输出的 logits (B, L, V) 以及 tokens (B, L)
+        logits, tokens = self._forward_step(spectra, precursors, sequences)  # logits: [B, L, V], tokens: [B, L]
+
+        # 2. 对logits做log_softmax得到每一位的对数概率
+        log_probs = F.log_softmax(logits, dim=-1)  # [B, L, V]
+
+        # 3. 提取真实token对应的概率
+        # tokens: [B, L]，每个位置是 [0, V-1] 的token id
+        token_log_probs = torch.gather(log_probs, 2, tokens.unsqueeze(-1)).squeeze(-1)  # [B, L]
+
+        # 4. mask掉无效token（通常0/pad为无效token）
+        mask = tokens != 0  # [B, L]
+        valid_token_log_probs = token_log_probs * mask
+
+        # 5. 平均每条序列的有效token概率（可sum，也可mean，一般推荐mean防止长短bias）
+        seq_logp = (valid_token_log_probs.sum(dim=1)) / mask.sum(dim=1).clamp(min=1)  # [B,]
+        return seq_logp
+    
+    def dpo_training_step(
+        self,
+        batch: Tuple[torch.Tensor, torch.Tensor, List[str], List[str]],
+        *args,
+        mode: str = "train",
+        ) -> torch.Tensor:
+        spectra, precursors, pos_sequences, neg_sequences = batch
+        score_pos = self.score_sequence(spectra, precursors, pos_sequences)
+        score_neg = self.score_sequence(spectra, precursors, neg_sequences)
+        loss = self.dpoloss(score_pos, score_neg, beta=1.0)
+        self.log(
+            f"{mode}_DPOLoss",
+            loss.detach(),
+            on_step=False,
+            on_epoch=True,
+            sync_dist=True,
+        )
+        return loss
+
+
 
     def validation_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor, List[str]], *args

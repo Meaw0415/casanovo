@@ -41,6 +41,7 @@ def aa_match_prefix(
     pep_match : bool
         Boolean flag to indicate whether the two peptide sequences fully match.
     """
+
     aa_matches = np.zeros(max(len(peptide1), len(peptide2)), np.bool_)
     # Find longest mass-matching prefix.
     i1, i2, cum_mass1, cum_mass2 = 0, 0, 0.0, 0.0
@@ -161,6 +162,7 @@ def aa_match(
     pep_match : bool
         Boolean flag to indicate whether the two peptide sequences fully match.
     """
+
     if mode == "best":
         return aa_match_prefix_suffix(
             peptide1, peptide2, aa_dict, cum_mass_threshold, ind_mass_threshold
@@ -220,6 +222,7 @@ def aa_match_batch(
     n_aa2: int
         Total number of amino acids in the second list of peptide sequences.
     """
+
     aa_matches_batch, n_aa1, n_aa2 = [], 0, 0
     for peptide1, peptide2 in zip(peptides1, peptides2):
         # Split peptides into individual AAs if necessary.
