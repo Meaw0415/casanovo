@@ -10,15 +10,15 @@
 
 # Max absolute difference allowed with respect to observed precursor m/z.
 # Predictions outside the tolerance range are assigned a negative peptide score.
-precursor_mass_tol:   # ppm
+precursor_mass_tol: 50000000  # ppm
 # Isotopes to consider when comparing predicted and observed precursor m/z's.
 isotope_error_range: [0, 1]
 # The minimum length of predicted peptides.
 min_peptide_len: 6
 # Number of spectra in one inference batch.
-predict_batch_size: 64
+predict_batch_size: 8
 # Number of beams used in beam search.
-n_beams: 20
+n_beams: 5
 # Number of PSMs for each spectrum.
 top_match: 1
 # The hardware accelerator to use. Must be one of:
@@ -46,7 +46,7 @@ tb_summarywriter:
 # this field empty saves none.
 save_top_k: 5
 # Path to saved checkpoints.
-model_save_folder_path: ""
+model_save_folder_path: "/mnt/iMVR/zhengf/casanovo/dpo_res"
 # Model validation and checkpointing frequency in training steps.
 val_check_interval: 50_000
 
@@ -95,7 +95,7 @@ train_label_smoothing: 0.01
 # Number of spectra in one training batch.
 train_batch_size: 32
 # Max number of training epochs.
-max_epochs: 30
+max_epochs: 100
 # Number of validation steps to run before training begins.
 num_sanity_val_steps: 0
 # Calculate peptide and amino acid precision during training.

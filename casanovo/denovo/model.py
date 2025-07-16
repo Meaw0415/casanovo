@@ -737,20 +737,59 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
         return loss.mean()
 
 
+    # def training_step(
+    #     self,
+    #     batch: Tuple[torch.Tensor, torch.Tensor, List[str]],
+    #     *args,
+    #     mode: str = "train",
+    # ) -> torch.Tensor:
+    #     """
+    #     A single training step.
+
+    #     Parameters
+    #     ----------
+    #     batch : Tuple[torch.Tensor, torch.Tensor, List[str]]
+    #         A batch of (i) MS/MS spectra, (ii) precursor information, (iii)
+    #         peptide sequences as torch Tensors.
+    #     mode : str
+    #         Logging key to describe the current stage.
+
+    #     Returns
+    #     -------
+    #     torch.Tensor
+    #         The loss of the training step.
+    #     """
+    #     pred, truth = self._forward_step(*batch)
+    #     pred = pred[:, :-1, :].reshape(-1, self.decoder.vocab_size + 1)
+    #     if mode == "train":
+    #         loss = self.celoss(pred, truth.flatten())
+    #     else:
+    #         loss = self.val_celoss(pred, truth.flatten())
+    #     self.log(
+    #         f"{mode}_CELoss",
+    #         loss.detach(),
+    #         on_step=False,
+    #         on_epoch=True,
+    #         sync_dist=True,
+    #     )
+    #     return loss
+    
     def training_step(
         self,
-        batch: Tuple[torch.Tensor, torch.Tensor, List[str]],
+        batch: Union[
+            Tuple[torch.Tensor, torch.Tensor, List[str]],
+            Tuple[torch.Tensor, torch.Tensor, List[str], List[str]]
+        ],
         *args,
         mode: str = "train",
     ) -> torch.Tensor:
         """
-        A single training step.
+        A single training step, supporting both CE and DPO losses.
 
         Parameters
         ----------
-        batch : Tuple[torch.Tensor, torch.Tensor, List[str]]
-            A batch of (i) MS/MS spectra, (ii) precursor information, (iii)
-            peptide sequences as torch Tensors.
+        batch : Tuple
+            (spectra, precursors, pos_ids[, neg_ids]) depending on training mode.
         mode : str
             Logging key to describe the current stage.
 
@@ -759,21 +798,42 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
         torch.Tensor
             The loss of the training step.
         """
-        pred, truth = self._forward_step(*batch)
-        pred = pred[:, :-1, :].reshape(-1, self.decoder.vocab_size + 1)
-        if mode == "train":
-            loss = self.celoss(pred, truth.flatten())
+        if len(batch) == 3:
+            spectra, precursors, pos_ids = batch
+            pred, truth = self._forward_step(spectra, precursors, pos_ids)
+            pred = pred[:, :-1, :].reshape(-1, self.decoder.vocab_size + 1)
+
+            loss_fn = self.celoss if mode == "train" else self.val_celoss
+            loss = loss_fn(pred, truth.flatten())
+
+            self.log(
+                f"{mode}_CELoss",
+                loss.detach(),
+                on_step=False,
+                on_epoch=True,
+                sync_dist=True,
+            )
+            return loss
+
+        elif len(batch) == 4:
+            spectra, precursors, pos_ids, neg_ids = batch
+            pos_score = self.score_sequence(spectra, precursors, pos_ids)  # shape [B]
+            neg_score = self.score_sequence(spectra, precursors, neg_ids)  # shape [B]
+
+            loss = self.dpo_loss(pos_score, neg_score)
+
+            self.log(
+                f"{mode}_CELoss",
+                loss.detach(),
+                on_step=False,
+                on_epoch=True,
+                sync_dist=True,
+            )
+            return loss
+
         else:
-            loss = self.val_celoss(pred, truth.flatten())
-        self.log(
-            f"{mode}_CELoss",
-            loss.detach(),
-            on_step=False,
-            on_epoch=True,
-            sync_dist=True,
-        )
-        return loss
-    
+            raise ValueError(f"Unexpected batch format with length {len(batch)}.")
+
     def score_sequence(self, spectra, precursors, sequences):
         """
         给定谱图、前体信息和目标肽段序列，计算每条肽段的平均 log-probability 作为分数。

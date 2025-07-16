@@ -187,6 +187,17 @@ class SpectrumDataset(Dataset):
         """Set the NumPy random number generator."""
         self._rng = np.random.default_rng(seed)
 
+import csv
+def load_neg_samples(neg_sample_csv):
+    """
+    返回 {gt_seq: neg_seq} 字典
+    """
+    neg_samples = {}
+    with open(neg_sample_csv, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            neg_samples[row['gt_seq']] = row['neg_seq']
+    return neg_samples
 
 class AnnotatedSpectrumDataset(SpectrumDataset):
     """
@@ -224,6 +235,8 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         min_intensity: float = 0.01,
         remove_precursor_tol: float = 2.0,
         random_state: Optional[int] = None,
+        negative_samples: bool = True,
+        neg_sample_csv: Optional[str] = '/mnt/iMVR/zhengf/casanovo/res/r50/all_neg_samples.csv'
     ):
         super().__init__(
             annotated_spectrum_index,
@@ -234,7 +247,21 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
             remove_precursor_tol=remove_precursor_tol,
             random_state=random_state,
         )
-
+        self.negative_samples = negative_samples
+        self.neg_samples = None
+        
+        # Load negative samples if specified
+        print("Loading negative samples from:", neg_sample_csv)
+        if negative_samples and neg_sample_csv:
+            neg_dict = load_neg_samples(neg_sample_csv)
+            # 生成 index 顺序的负样本 list
+            self.neg_samples = []
+            for i in range(len(self)):
+                _, _, _, _, peptide = self.index[i]
+                neg = neg_dict.get(peptide, ('NA', 'NA', 'NA'))
+                self.neg_samples.append(neg)
+        print("Negative samples loaded:", len(self.neg_samples) if self.neg_samples else 0)
+        
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, float, int, str]:
         """
         Return the annotated MS/MS spectrum with the given index.
@@ -265,5 +292,7 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         spectrum = self._process_peaks(
             mz_array, int_array, precursor_mz, precursor_charge
         )
-
-        return spectrum, precursor_mz, precursor_charge, peptide
+        if self.negative_samples:
+            return spectrum, precursor_mz, precursor_charge, peptide, self.neg_samples[idx]
+        else:
+            return spectrum, precursor_mz, precursor_charge, peptide
