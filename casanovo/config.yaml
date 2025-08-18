@@ -18,9 +18,9 @@ min_peptide_len: 6
 # Number of spectra in one inference batch.
 predict_batch_size: 64
 # Number of beams used in beam search.
-n_beams: 10
+n_beams: 5
 # Number of PSMs for each spectrum.
-top_match: 10
+top_match: 1
 # The hardware accelerator to use. Must be one of:
 # "cpu", "gpu", "tpu", "ipu", "hpu", "mps", or "auto".
 accelerator: "auto"

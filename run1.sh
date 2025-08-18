@@ -1,9 +1,33 @@
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf           --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Apis-mellifera.mztab
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Bacillus-subtilis.mgf        --model /mnt/nas/fangzheng/mass/ckpt/excl_bacillus.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Bacillus-subtilis.mztab
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Candidatus-endoloripes.mgf   --model /mnt/nas/fangzheng/mass/ckpt/excl_clambacteria.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Candidatus-endoloripes.mztab
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/H.-sapiens.mgf               --model /mnt/nas/fangzheng/mass/ckpt/excl_human.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/H.-sapiens.mztab
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Methanosarcina-mazei.mgf     --model /mnt/nas/fangzheng/mass/ckpt/excl_mmazei.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Methanosarcina-mazei.mztab
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Mus-musculus.mgf             --model /mnt/nas/fangzheng/mass/ckpt/excl_mouse.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Mus-musculus.mztab
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf              --model /mnt/nas/fangzheng/mass/ckpt/excl_ricebean.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml    --output /mnt/iMVR/zhengf/casanovo/res/r100/Vigna-mungo.mztab
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf     --model /mnt/nas/fangzheng/mass/ckpt/excl_tomato.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml   --output /mnt/iMVR/zhengf/casanovo/res/r100/Solanum-lycopersicum.mztab
-CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_yeast.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml     --output /mnt/iMVR/zhengf/casanovo/res/r100/Saccharomyces-cerevisiae.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf           --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Apis-mellifera.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Bacillus-subtilis.mgf        --model /mnt/nas/fangzheng/mass/ckpt/excl_bacillus.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Bacillus-subtilis.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Candidatus-endoloripes.mgf   --model /mnt/nas/fangzheng/mass/ckpt/excl_clambacteria.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Candidatus-endoloripes.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/H.-sapiens.mgf               --model /mnt/nas/fangzheng/mass/ckpt/excl_human.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/H.-sapiens.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Methanosarcina-mazei.mgf     --model /mnt/nas/fangzheng/mass/ckpt/excl_mmazei.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Methanosarcina-mazei.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Mus-musculus.mgf             --model /mnt/nas/fangzheng/mass/ckpt/excl_mouse.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml      --output /mnt/iMVR/zhengf/casanovo/res/r100/Mus-musculus.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf              --model /mnt/nas/fangzheng/mass/ckpt/excl_ricebean.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml    --output /mnt/iMVR/zhengf/casanovo/res/r100/Vigna-mungo.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf     --model /mnt/nas/fangzheng/mass/ckpt/excl_tomato.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml   --output /mnt/iMVR/zhengf/casanovo/res/r100/Solanum-lycopersicum.mztab
+# CUDA_VISIBLE_DEVICES=5 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_yeast.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config5000.yaml     --output /mnt/iMVR/zhengf/casanovo/res/r100/Saccharomyces-cerevisiae.mztab
+## Evaluate
+# CUDA_VISIBLE_DEVICES=0 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf           --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt
+# CUDA_VISIBLE_DEVICES=7 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Bacillus-subtilis.mgf        --model /mnt/nas/fangzheng/mass/ckpt/excl_bacillus.ckpt
+# CUDA_VISIBLE_DEVICES=7 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Candidatus-endoloripes.mgf   --model /mnt/nas/fangzheng/mass/ckpt/excl_clambacteria.ckpt
+# CUDA_VISIBLE_DEVICES=7 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/H.-sapiens.mgf               --model /mnt/nas/fangzheng/mass/ckpt/excl_human.ckpt
+# CUDA_VISIBLE_DEVICES=7 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Methanosarcina-mazei.mgf     --model /mnt/nas/fangzheng/mass/ckpt/excl_mmazei.ckpt
+# CUDA_VISIBLE_DEVICES=7 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Mus-musculus.mgf             --model /mnt/nas/fangzheng/mass/ckpt/excl_mouse.ckpt
+# CUDA_VISIBLE_DEVICES=7 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf              --model /mnt/nas/fangzheng/mass/ckpt/excl_ricebean.ckpt
+# CUDA_VISIBLE_DEVICES=7 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf     --model /mnt/nas/fangzheng/mass/ckpt/excl_tomato.ckpt
+# CUDA_VISIBLE_DEVICES=7 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_yeast.ckpt
+
+
+## Train
+CUDA_VISIBLE_DEVICES=0 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf  \
+    /mnt/nas/fangzheng/nine-species-balanced/Bacillus-subtilis.mgf \
+    /mnt/nas/fangzheng/nine-species-balanced/Candidatus-endoloripes.mgf \
+    /mnt/nas/fangzheng/nine-species-balanced/H.-sapiens.mgf \
+    /mnt/nas/fangzheng/nine-species-balanced/Methanosarcina-mazei.mgf \
+    /mnt/nas/fangzheng/nine-species-balanced/Mus-musculus.mgf \
+    /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf \
+    /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf \
+    /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf \
+   --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt \
+   --config /mnt/data1/fangzheng/casanovo/casanovo/config.yaml \

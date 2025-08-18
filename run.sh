@@ -7,3 +7,9 @@ CUDA_VISIBLE_DEVICES=6 casanovo sequence /mnt/nas/fangzheng/nine-species-balance
 CUDA_VISIBLE_DEVICES=6 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf              --model /mnt/nas/fangzheng/mass/ckpt/excl_ricebean.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config.yaml    --output /mnt/iMVR/zhengf/casanovo/res/r5000/Vigna-mungo.mztab
 CUDA_VISIBLE_DEVICES=6 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf     --model /mnt/nas/fangzheng/mass/ckpt/excl_tomato.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config.yaml   --output /mnt/iMVR/zhengf/casanovo/res/r5000/Solanum-lycopersicum.mztab
 CUDA_VISIBLE_DEVICES=6 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_yeast.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config.yaml     --output /mnt/iMVR/zhengf/casanovo/res/r5000/Saccharomyces-cerevisiae.mztab
+# CUDA_VISIBLE_DEVICES=2 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt --config  /mnt/data1/fangzheng/casanovo/casanovo/config1.yaml
+# CUDA_VISIBLE_DEVICES=2 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt --config  /mnt/data1/fangzheng/casanovo/casanovo/config.yaml
+
+
+CUDA_VISIBLE_DEVICES=0 casanovo sequence /mnt/data1/fangzheng/casanovo/sample_data/sample_preprocessed_spectra.mgf --config /mnt/data1/fangzheng/casanovo/casanovo/config.yaml --output /mnt/data1/fangzheng/casanovo/sample_data/r.mztab
+CUDA_VISIBLE_DEVICES=0 casanovo sequence /mnt/data1/fangzheng/casanovo/sample_data/sample_preprocessed_spectra.mgf --config /mnt/data1/fangzheng/casanovo/casanovo/config1.yaml --output /mnt/data1/fangzheng/casanovo/sample_data/r1.mztab
