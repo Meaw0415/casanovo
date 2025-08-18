@@ -1,5 +1,6 @@
 # Casanovo
 
+### /mnt/data1/fangzheng/casanovo/casanovo/data/datasets.py 莱改变csv 获得dpo pair
 **_De Novo_ Mass Spectrometry Peptide Sequencing with a Transformer Model**
 
 ![image](https://user-images.githubusercontent.com/32707537/152622912-ca87da20-a64c-4e3f-9ca1-721c6b0d9c64.png)
