@@ -10,7 +10,7 @@
 
 # Max absolute difference allowed with respect to observed precursor m/z.
 # Predictions outside the tolerance range are assigned a negative peptide score.
-precursor_mass_tol: 50000000  # ppm
+precursor_mass_tol: 50  # ppm
 # Isotopes to consider when comparing predicted and observed precursor m/z's.
 isotope_error_range: [0, 1]
 # The minimum length of predicted peptides.
@@ -48,7 +48,7 @@ save_top_k: 5
 # Path to saved checkpoints.
 model_save_folder_path: "/mnt/iMVR/zhengf/casanovo/dpo_res"
 # Model validation and checkpointing frequency in training steps.
-val_check_interval: 50_000
+val_check_interval: 211714
 
 # SPECTRUM PROCESSING OPTIONS
 # Number of the most intense peaks to retain, any remaining peaks are discarded.
@@ -81,9 +81,9 @@ dim_intensity:
 # Max decoded peptide length.
 max_length: 100
 # The number of iterations for the linear warm-up of the learning rate.
-warmup_iters: 100_000
+warmup_iters: 100_00
 # The number of iterations for the cosine half period of the learning rate.
-cosine_schedule_period_iters: 600_000
+cosine_schedule_period_iters: 600_00
 # Learning rate for weight updates during training.
 learning_rate: 5e-4
 # Regularization term for weight updates.
@@ -93,9 +93,9 @@ train_label_smoothing: 0.01
 
 # TRAINING/INFERENCE OPTIONS
 # Number of spectra in one training batch.
-train_batch_size: 32
+train_batch_size: 4
 # Max number of training epochs.
-max_epochs: 100
+max_epochs: 50
 # Number of validation steps to run before training begins.
 num_sanity_val_steps: 0
 # Calculate peptide and amino acid precision during training.

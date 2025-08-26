@@ -187,7 +187,10 @@ class SpectrumDataset(Dataset):
         """Set the NumPy random number generator."""
         self._rng = np.random.default_rng(seed)
 
+import os
 import csv
+import pickle
+
 def load_neg_samples(neg_sample_csv):
     """
     返回 {gt_seq: neg_seq} 字典
@@ -236,8 +239,10 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         remove_precursor_tol: float = 2.0,
         random_state: Optional[int] = None,
         negative_samples: bool = True,
-        neg_sample_csv: Optional[str] = '/mnt/iMVR/zhengf/casanovo/res/r50/all_neg_samples.csv'
+        neg_sample_csv: Optional[str] = '/mnt/iMVR/zhengf/casanovo/res/r50/neg.csv'
     ):
+        # /mnt/iMVR/zhengf/casanovo/res/r50/neg.csv
+        # /mnt/iMVR/zhengf/casanovo/res/r50/all_neg_samples.csv # mass
         super().__init__(
             annotated_spectrum_index,
             n_peaks=n_peaks,
@@ -250,17 +255,45 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         self.negative_samples = negative_samples
         self.neg_samples = None
         
-        # Load negative samples if specified
-        print("Loading negative samples from:", neg_sample_csv)
         if negative_samples and neg_sample_csv:
-            neg_dict = load_neg_samples(neg_sample_csv)
-            # 生成 index 顺序的负样本 list
-            self.neg_samples = []
-            for i in range(len(self)):
-                _, _, _, _, peptide = self.index[i]
-                neg = neg_dict.get(peptide, ('NA', 'NA', 'NA'))
-                self.neg_samples.append(neg)
-        print("Negative samples loaded:", len(self.neg_samples) if self.neg_samples else 0)
+            ext = os.path.splitext(neg_sample_csv)[1].lower()
+            if ext == ".pkl":
+                print(f"Loading index + negative samples from {neg_sample_csv}")
+                with open(neg_sample_csv, "rb") as f:
+                    data = pickle.load(f)
+                    self.index = data["index"]
+                    self.neg_samples = data["neg_samples"]
+            elif ext == ".csv":
+                print(f"Loading negative samples from CSV: {neg_sample_csv}")
+                neg_dict = load_neg_samples(neg_sample_csv)
+
+                self.neg_samples = []
+                for i in range(len(self)):
+                    _, _, _, _, peptide = self.index[i]
+                    neg = neg_dict.get(peptide, ('NA', 'NA', 'NA'))
+                    self.neg_samples.append(neg)
+
+                # 同时生成对应的 pkl，方便下次直接用
+                out_pkl = neg_sample_csv.replace(".csv", ".pkl")
+                with open(out_pkl, "wb") as f:
+                    pickle.dump({"index": self.index, "neg_samples": self.neg_samples}, f)
+                print(f"Saved pkl to {out_pkl}")
+            else:
+                raise ValueError(f"Unsupported file format: {ext}")
+
+            print("Negative samples loaded:", len(self.neg_samples) if self.neg_samples else 0)
+        
+        # # Load negative samples if specified
+        # print("Loading negative samples from:", neg_sample_csv)
+        # if negative_samples and neg_sample_csv:
+        #     neg_dict = load_neg_samples(neg_sample_csv)
+        #     # 生成 index 顺序的负样本 list
+        #     self.neg_samples = []
+        #     for i in range(len(self)):
+        #         _, _, _, _, peptide = self.index[i]
+        #         neg = neg_dict.get(peptide, ('NA', 'NA', 'NA'))
+        #         self.neg_samples.append(neg)
+        # print("Negative samples loaded:", len(self.neg_samples) if self.neg_samples else 0)
         
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, float, int, str]:
         """

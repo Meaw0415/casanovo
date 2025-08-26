@@ -255,6 +255,7 @@ class ModelRunner:
         )
 
         if self.model_filename is None:
+            print("No model file provided, training from scratch.")
             # Train a model from scratch if no model file is provided.
             if train:
                 self.model = Spec2Pep(**model_params)

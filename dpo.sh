@@ -1,12 +1,2 @@
-CUDA_VISIBLE_DEVICES=5 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/Bacillus-subtilis.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/Candidatus-endoloripes.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/H.-sapiens.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/Methanosarcina-mazei.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/Mus-musculus.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf \
- /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf \
- --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt \
- --config /mnt/iMVR/zhengf/casanovo/casanovo/config_dpo.yaml \
+CUDA_VISIBLE_DEVICES=2 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf /mnt/nas/fangzheng/nine-species-balanced/Bacillus-subtilis.mgf /mnt/nas/fangzheng/nine-species-balanced/Candidatus-endoloripes.mgf /mnt/nas/fangzheng/nine-species-balanced/H.-sapiens.mgf /mnt/nas/fangzheng/nine-species-balanced/Methanosarcina-mazei.mgf /mnt/nas/fangzheng/nine-species-balanced/Mus-musculus.mgf /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config_dpo.yaml
+# CUDA_VISIBLE_DEVICES=1,2 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/1.mgf /mnt/nas/fangzheng/nine-species-balanced/1.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config_dpo.yaml

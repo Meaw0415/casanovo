@@ -108,9 +108,10 @@ class DeNovoDataModule(pl.LightningDataModule):
                 self.train_dataset = make_dataset(
                     self.train_index,
                     random_state=self.rng,
+                    negative_samples=True,
                 )
             if self.valid_index is not None:
-                self.valid_dataset = make_dataset(self.valid_index)
+                self.valid_dataset = make_dataset(self.valid_index, negative_samples=False)
         if stage in (None, "test"):
             make_dataset = functools.partial(
                 AnnotatedSpectrumDataset if annotated else SpectrumDataset,
@@ -151,7 +152,8 @@ class DeNovoDataModule(pl.LightningDataModule):
             batch_size=batch_size,
             collate_fn=prepare_batch,
             pin_memory=True,
-            num_workers=self.n_workers,
+            # num_workers=self.n_workers,
+            num_workers=0,
             shuffle=shuffle,
         )
     
