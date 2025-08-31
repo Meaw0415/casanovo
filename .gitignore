@@ -56,6 +56,8 @@ coverage.xml
 
 # Django stuff:
 *.log
+*.mztab
+*.ckpt
 
 # Sphinx documentation
 docs/_build/
@@ -84,6 +86,7 @@ target/
 
 # exclude data from source control by default
 /data/
+
 
 # Mac OS-specific storage files
 .DS_Store

@@ -10,7 +10,7 @@
 
 # Max absolute difference allowed with respect to observed precursor m/z.
 # Predictions outside the tolerance range are assigned a negative peptide score.
-precursor_mass_tol:   # ppm
+precursor_mass_tol: 50  # ppm
 # Isotopes to consider when comparing predicted and observed precursor m/z's.
 isotope_error_range: [0, 1]
 # The minimum length of predicted peptides.
@@ -18,7 +18,7 @@ min_peptide_len: 6
 # Number of spectra in one inference batch.
 predict_batch_size: 64
 # Number of beams used in beam search.
-n_beams: 20
+n_beams: 5
 # Number of PSMs for each spectrum.
 top_match: 1
 # The hardware accelerator to use. Must be one of:

@@ -10,7 +10,7 @@
 
 # Max absolute difference allowed with respect to observed precursor m/z.
 # Predictions outside the tolerance range are assigned a negative peptide score.
-precursor_mass_tol: 50000000  # ppm
+precursor_mass_tol: 50  # ppm
 # Isotopes to consider when comparing predicted and observed precursor m/z's.
 isotope_error_range: [0, 1]
 # The minimum length of predicted peptides.
@@ -39,16 +39,16 @@ random_seed: 454
 
 # OUTPUT OPTIONS
 # Logging frequency in training steps.
-n_log: 1
+n_log: 1000
 # Tensorboard directory to use for keeping track of training metrics.
 tb_summarywriter:
 # Save the top k model checkpoints during training. -1 saves all, and leaving
 # this field empty saves none.
 save_top_k: 5
 # Path to saved checkpoints.
-model_save_folder_path: "/mnt/iMVR/zhengf/casanovo/dpo_res"
-# Model validation and checkpointing frequency in training steps.
-val_check_interval: 50_000
+model_save_folder_path: "/mnt/data1/fangzheng/sim_only_model/checkpoints_08_31_val_small"
+# Model validation and checkpointing frequency in training steps.  211714
+val_check_interval: 200000
 
 # SPECTRUM PROCESSING OPTIONS
 # Number of the most intense peaks to retain, any remaining peaks are discarded.

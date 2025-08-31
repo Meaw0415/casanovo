@@ -812,6 +812,7 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
                 on_step=False,
                 on_epoch=True,
                 sync_dist=True,
+                batch_size = pred.shape[0]
             )
             return loss
 
@@ -828,6 +829,7 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
                 on_step=False,
                 on_epoch=True,
                 sync_dist=True,
+                batch_size = pred.shape[0]
             )
             return loss
 
@@ -924,12 +926,15 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
             "Peptide precision at coverage=1",
             pep_precision,
             **log_args,
+            batch_size=batch[0].shape[0]
         )
         self.log(
             "AA precision at coverage=1",
             aa_precision,
             **log_args,
+            batch_size=batch[0].shape[0]
         )
+        print("AA precision:", aa_precision, "Peptide precision:", pep_precision)
         return loss
 
     def predict_step(

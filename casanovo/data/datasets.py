@@ -235,8 +235,8 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         min_intensity: float = 0.01,
         remove_precursor_tol: float = 2.0,
         random_state: Optional[int] = None,
-        negative_samples: bool = True,
-        neg_sample_csv: Optional[str] = '/mnt/iMVR/zhengf/casanovo/res/r50/all_neg_samples.csv'
+        negative_samples: bool = False,
+        neg_sample_csv: Optional[str] = '/mnt/data1/fangzheng/nine/nine-species-balanced/neg_sample_sim_only/neg.csv'
     ):
         super().__init__(
             annotated_spectrum_index,

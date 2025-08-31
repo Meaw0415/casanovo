@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=5 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf \
+CUDA_VISIBLE_DEVICES=7 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf \
  /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf \
  /mnt/nas/fangzheng/nine-species-balanced/Bacillus-subtilis.mgf \
  /mnt/nas/fangzheng/nine-species-balanced/Candidatus-endoloripes.mgf \
@@ -9,4 +9,4 @@ CUDA_VISIBLE_DEVICES=5 casanovo train --validation_peak_path /mnt/nas/fangzheng/
  /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf \
  /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf \
  --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt \
- --config /mnt/iMVR/zhengf/casanovo/casanovo/config_dpo.yaml \
+ --config /mnt/data1/fangzheng/casanovo/casanovo/config_dpo.yaml \
