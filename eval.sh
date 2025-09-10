@@ -10,5 +10,5 @@
 
 
 
-CUDA_VISIBLE_DEVICES=4 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf            --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt  --config /mnt/data1/fangzheng/casanovo/casanovo/config1.yaml --output /mnt/data1/fangzheng/casanovo/casanovo/o2.mztab
-CUDA_VISIBLE_DEVICES=0 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf          --model /mnt/data1/fangzheng/nine/nine-species-balanced/neg_sample_sim_only/model/epoch=0-step=21175.ckpt --config /mnt/data1/fangzheng/casanovo/casanovo/config_dpo.yaml --output /mnt/data1/fangzheng/casanovo/casanovo/tr.mztab
+# CUDA_VISIBLE_DEVICES=4 casanovo sequence /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf            --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt  --config /mnt/data1/fangzheng/casanovo/casanovo/config1.yaml --output /mnt/data1/fangzheng/casanovo/casanovo/o2.mztab
+CUDA_VISIBLE_DEVICES=0 casanovo evaluate /mnt/nas/fangzheng/nine-species-balanced/Apis-mellifera.mgf          --model /mnt/data1/fangzheng/nine/nine-species-balanced/neg_sample_sim_only/model/epoch=0-step=21175.ckpt --config /mnt/data1/fangzheng/casanovo/casanovo/config_dpo.yaml

@@ -6,6 +6,7 @@ import logging
 import warnings
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
+import copy
 import depthcharge.masses
 import einops
 import torch
@@ -21,6 +22,20 @@ from ..data import ms_io
 
 logger = logging.getLogger("casanovo")
 
+def dpo_loss(pos_logp, neg_logp, pos_ref_logp=None, neg_ref_logp=None, beta=0.5):
+    """
+    pos_logp/neg_logp:  policy 的序列对数似然（建议长度归一，含EOS） [B]
+    pos_ref_logp/neg_ref_logp:  冻结 reference 的序列对数似然 [B]
+    beta: DPO 的温度/锐度系数（不是权重系数）
+    """
+    if pos_ref_logp is None or neg_ref_logp is None:
+        delta = (pos_logp - neg_logp)
+    else:
+        delta = (pos_logp - pos_ref_logp) - (neg_logp - neg_ref_logp)  # [B]
+
+    # -log σ(βΔ) = softplus(-βΔ) 数值更稳
+    loss = F.softplus(-beta * delta).mean()
+    return loss
 
 class Spec2Pep(pl.LightningModule, ModelMixin):
     """
@@ -117,6 +132,7 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
         cosine_schedule_period_iters: int = 600_000,
         out_writer: Optional[ms_io.MztabWriter] = None,
         calculate_precision: bool = False,
+        lambda_ce: float = 0.0,
         **kwargs: Dict,
     ):
         super().__init__()
@@ -140,12 +156,19 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
             residues=residues,
             max_charge=max_charge,
         )
+
+        # reference model for DPO
+        self.reference_encoder = None
+        self.reference_decoder = None
+
+
         self.softmax = torch.nn.Softmax(2)
         self.celoss = torch.nn.CrossEntropyLoss(
             ignore_index=0, label_smoothing=train_label_smoothing
         )
         self.val_celoss = torch.nn.CrossEntropyLoss(ignore_index=0)
-        self.dpo_loss = self.dpo_loss
+        self.dpo_loss = dpo_loss
+        self.lambda_ce = lambda_ce
         # Optimizer settings.
         self.warmup_iters = warmup_iters
         self.cosine_schedule_period_iters = cosine_schedule_period_iters
@@ -696,6 +719,7 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
             else:
                 yield []
 
+    
     def _forward_step(
         self,
         spectra: torch.Tensor,
@@ -728,13 +752,80 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
         """
         return self.decoder(sequences, precursors, *self.encoder(spectra))
 
-    def dpo_loss(self, pos_score, neg_score, beta=1.0):
-        # pos_score, neg_score: [B,] 张量
-        logits = beta * (pos_score - neg_score)  # [B,]
-        # DPO标准公式: -log( exp(beta*pos) / [exp(beta*pos) + exp(beta*neg)] )
-        # 等价于: -log(sigmoid(beta * (pos-neg)))
-        loss = -torch.log(torch.sigmoid(logits) + 1e-8)  # 防止log(0)
-        return loss.mean()
+    def _forward_reference(
+        self,
+        spectra: torch.Tensor,
+        precursors: torch.Tensor,
+        sequences: List[str],
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        The forward learning step through the reference model.
+
+        Parameters
+        ----------
+        spectra : torch.Tensor of shape (n_spectra, n_peaks, 2)
+            The spectra for which to predict peptide sequences.
+            Axis 0 represents an MS/MS spectrum, axis 1 contains the peaks in
+            the MS/MS spectrum, and axis 2 is essentially a 2-tuple specifying
+            the m/z-intensity pair for each peak. These should be zero-padded,
+            such that all the spectra in the batch are the same length.
+        precursors : torch.Tensor of size (n_spectra, 3)
+            The measured precursor mass (axis 0), precursor charge (axis 1), and
+            precursor m/z (axis 2) of each MS/MS spectrum.
+        sequences : List[str] of length n_spectra
+            The partial peptide sequences to predict.
+
+        Returns
+        -------
+        scores : torch.Tensor of shape (n_spectra, length, n_amino_acids)
+            The individual amino acid scores for each prediction.
+        tokens : torch.Tensor of shape (n_spectra, length)
+            The predicted tokens for each spectrum.
+        """
+        if self.reference_encoder is None or self.reference_decoder is None:
+            raise ValueError("Reference model not set for DPO loss calculation.")
+        return self.reference_decoder(
+            sequences,
+            precursors,
+            *self.reference_encoder(spectra)
+        )
+    # def dpo_loss(self, pos_logp, neg_logp, pos_ref_logp=None, neg_ref_logp=None, beta=0.3):
+    #     """
+    #     pos_logp/neg_logp:  policy 的序列对数似然（建议长度归一，含EOS） [B]
+    #     pos_ref_logp/neg_ref_logp:  冻结 reference 的序列对数似然 [B]
+    #     beta: DPO 的温度/锐度系数（不是权重系数）
+    #     """
+    #     if pos_ref_logp is None or neg_ref_logp is None:
+    #         delta = (pos_logp - neg_logp)
+    #     else:
+    #         delta = (pos_logp - pos_ref_logp) - (neg_logp - neg_ref_logp)  # [B]
+
+    #     # -log σ(βΔ) = softplus(-βΔ) 数值更稳
+    #     loss = F.softplus(-beta * delta).mean()
+    #     return loss
+
+    def dpo_loss(self,
+             pos_score: torch.Tensor,
+             neg_score: torch.Tensor,
+             pos_ref_score: torch.Tensor = None,
+             neg_ref_score: torch.Tensor = None,
+             beta: float = 0.2) -> torch.Tensor:
+        """
+        Stable DPO loss:
+        L = softplus( - beta * [ (s_pos - s_neg) - (s_pos_ref - s_neg_ref) ] )
+        如果没有 reference，就退化为 softplus( - beta * (s_pos - s_neg) ).
+        传入的 score 应该是“平均 log-prob”（已做长度归一）。
+        """
+        # (B,)
+        diff = pos_score - neg_score
+        if (pos_ref_score is not None) and (neg_ref_score is not None):
+            with torch.no_grad():
+                ref_diff = pos_ref_score - neg_ref_score
+            diff = diff - ref_diff
+
+        x = beta * diff
+        loss = F.softplus(-x).mean()
+        return loss
 
 
     # def training_step(
@@ -817,52 +908,87 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
             return loss
 
         elif len(batch) == 4:
+            
             spectra, precursors, pos_ids, neg_ids = batch
+            print(pos_ids[0], neg_ids[0])
             pos_score = self.score_sequence(spectra, precursors, pos_ids)  # shape [B]
             neg_score = self.score_sequence(spectra, precursors, neg_ids)  # shape [B]
 
-            loss = self.dpo_loss(pos_score, neg_score)
+            if self.reference_encoder is not None and self.reference_decoder is not None:
+                pos_ref_score = self.score_sequence_reference(spectra, precursors, pos_ids)
+                neg_ref_score = self.score_sequence_reference(spectra, precursors, neg_ids)
+            else:
+                pos_ref_score = None
+                neg_ref_score = None
 
+
+            dpo_loss = self.dpo_loss(pos_score, neg_score, pos_ref_score, neg_ref_score, beta=0.2)
+
+            # loss = self.lambda_ce * ce_loss + (1 - self.lambda_ce) * dpo_loss
+            loss = dpo_loss
+            # print("DPO loss:", loss.item())
             self.log(
-                f"{mode}_CELoss",
+                f"{mode}_DPOLoss",
                 loss.detach(),
                 on_step=False,
                 on_epoch=True,
                 sync_dist=True,
-                batch_size = pred.shape[0]
+                batch_size=pos_score.shape[0],
             )
+
+            
             return loss
 
         else:
             raise ValueError(f"Unexpected batch format with length {len(batch)}.")
+    
+    def score_sequence_reference(self, spectra, precursors, sequences):
+        # 1) 编码一次（可外部缓存 encoder 结果进一步加速）
+        logits, targets = self._forward_reference(spectra, precursors, sequences)  # logits:[B,L,V], targets:[B,L]
 
+        # 2) next-token 训练式对齐：预测 t 应该用 target 的 t-1 作为条件
+        logits = logits[:, :-1, :]           # [B, L-1, V]
+        targets = targets[:, 1:]             # [B, L-1]
+
+        # 3) log-softmax
+        log_probs = F.log_softmax(logits, dim=-1)  # [B, L-1, V]
+
+        # 4) 用“目标 token”抽取对数概率，而不是用预测 token
+        token_log_probs = log_probs.gather(2, targets.unsqueeze(-1)).squeeze(-1)  # [B, L-1]
+
+        # 5) 合理的 mask：用真实的 pad_id（不要硬编码 0）
+        pad_id = getattr(self.decoder, "pad_id", 0)   # 或 self.pad_id
+        mask = (targets != pad_id)                    # [B, L-1]
+
+        # 6) 平均长度归一，避免长短偏置
+        seq_logp = (token_log_probs * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
+        # seq_logp = (token_log_probs * mask).sum(dim=1) 
+
+        return seq_logp  # [B]
+    
     def score_sequence(self, spectra, precursors, sequences):
-        """
-        给定谱图、前体信息和目标肽段序列，计算每条肽段的平均 log-probability 作为分数。
-        输入:
-            spectra: [B, n_peaks, 2] torch.Tensor
-            precursors: [B, 3] torch.Tensor
-            sequences: List[str]，长度为B
-        输出:
-            seq_logp: [B,]，每条序列的分数
-        """
-        # 1. 得到模型输出的 logits (B, L, V) 以及 tokens (B, L)
-        logits, tokens = self._forward_step(spectra, precursors, sequences)  # logits: [B, L, V], tokens: [B, L]
+        # 1) 编码一次（可外部缓存 encoder 结果进一步加速）
+        logits, targets = self._forward_step(spectra, precursors, sequences)  # logits:[B,L,V], targets:[B,L]
 
-        # 2. 对logits做log_softmax得到每一位的对数概率
-        log_probs = F.log_softmax(logits, dim=-1)  # [B, L, V]
+        # 2) next-token 训练式对齐：预测 t 应该用 target 的 t-1 作为条件
+        logits = logits[:, :-1, :]           # [B, L-1, V]
+        targets = targets[:, 1:]             # [B, L-1]
 
-        # 3. 提取真实token对应的概率
-        # tokens: [B, L]，每个位置是 [0, V-1] 的token id
-        token_log_probs = torch.gather(log_probs, 2, tokens.unsqueeze(-1)).squeeze(-1)  # [B, L]
+        # 3) log-softmax
+        log_probs = F.log_softmax(logits, dim=-1)  # [B, L-1, V]
 
-        # 4. mask掉无效token（通常0/pad为无效token）
-        mask = tokens != 0  # [B, L]
-        valid_token_log_probs = token_log_probs * mask
+        # 4) 用“目标 token”抽取对数概率，而不是用预测 token
+        token_log_probs = log_probs.gather(2, targets.unsqueeze(-1)).squeeze(-1)  # [B, L-1]
 
-        # 5. 平均每条序列的有效token概率（可sum，也可mean，一般推荐mean防止长短bias）
-        seq_logp = (valid_token_log_probs.sum(dim=1)) / mask.sum(dim=1).clamp(min=1)  # [B,]
-        return seq_logp
+        # 5) 合理的 mask：用真实的 pad_id（不要硬编码 0）
+        pad_id = getattr(self.decoder, "pad_id", 0)   # 或 self.pad_id
+        mask = (targets != pad_id)                    # [B, L-1]
+
+        # 6) 平均长度归一，避免长短偏置
+        seq_logp = (token_log_probs * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
+        # seq_logp = (token_log_probs * mask).sum(dim=1) 
+
+        return seq_logp  # [B]
     
     def dpo_training_step(
         self,
@@ -934,7 +1060,7 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
             **log_args,
             batch_size=batch[0].shape[0]
         )
-        print("AA precision:", aa_precision, "Peptide precision:", pep_precision)
+        # print("peptides_pred:", peptides_pred, "peptides_true:", peptides_true)
         return loss
 
     def predict_step(
@@ -986,10 +1112,12 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
         """
         Log the training loss at the end of each epoch.
         """
-        train_loss = self.trainer.callback_metrics["train_CELoss"].detach()
+        train_loss0 = self.trainer.callback_metrics["train_CELoss"].detach()
+        train_loss1 = self.trainer.callback_metrics["train_DPOLoss"].detach()
         metrics = {
             "step": self.trainer.global_step,
-            "train": train_loss.item(),
+            "train": train_loss0.item(),
+            "train_dpo": train_loss1.item(),
         }
         self._history.append(metrics)
         self._log_history()

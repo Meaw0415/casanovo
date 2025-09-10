@@ -30,4 +30,8 @@ CUDA_VISIBLE_DEVICES=6 casanovo train --validation_peak_path /mnt/nas/fangzheng/
     /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf \
     /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf \
    --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt \
-   --config /mnt/data1/fangzheng/casanovo/casanovo/config_dpo.yaml \
+   --config /mnt/data1/fangzheng/casanovo/casanovo/config_dpo1.yaml \
+
+
+# ## Train
+# CUDA_VISIBLE_DEVICES=5 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/aa.mgf  /mnt/nas/fangzheng/nine-species-balanced/Bacillus-subtilis.mgf /mnt/nas/fangzheng/nine-species-balanced/Candidatus-endoloripes.mgf /mnt/nas/fangzheng/nine-species-balanced/H.-sapiens.mgf /mnt/nas/fangzheng/nine-species-balanced/Methanosarcina-mazei.mgf /mnt/nas/fangzheng/nine-species-balanced/Mus-musculus.mgf  /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf  /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf  --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt  --config /mnt/data1/fangzheng/casanovo/casanovo/config_dpo.yaml 

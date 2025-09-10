@@ -178,6 +178,8 @@ class ModelRunner:
             accelerator=self.config.accelerator,
             devices=1,
             enable_checkpointing=False,
+            gradient_clip_val=1.0,                 # 或 1.0
+            gradient_clip_algorithm="norm", 
         )
 
         if train:
@@ -193,8 +195,8 @@ class ModelRunner:
                 max_epochs=self.config.max_epochs,
                 num_sanity_val_steps=self.config.num_sanity_val_steps,
                 strategy=self._get_strategy(),
-                val_check_interval=self.config.val_check_interval,
-                check_val_every_n_epoch=None,
+                val_check_interval=self.config.val_check_interval, # self.config.val_check_interval,None
+                check_val_every_n_epoch=None, # None,True
             )
             trainer_cfg.update(additional_cfg)
 
@@ -275,10 +277,20 @@ class ModelRunner:
         # First try loading model details from the weights file, otherwise use
         # the provided configuration.
         device = torch.empty(1).device  # Use the default device.
+        
+        import copy
         try:
             self.model = Spec2Pep.load_from_checkpoint(
                 self.model_filename, map_location=device, **loaded_model_params
             )
+            # 同步 reference_encoder/decoder 参数并冻结
+            self.model.reference_encoder = copy.deepcopy(self.model.encoder)
+            self.model.reference_decoder = copy.deepcopy(self.model.decoder)
+            for p in self.model.reference_encoder.parameters():
+                p.requires_grad = False
+            for p in self.model.reference_decoder.parameters():
+                p.requires_grad = False
+            print("同步 reference_encoder/decoder 参数并冻结  try Case")
 
             architecture_params = set(model_params.keys()) - set(
                 loaded_model_params.keys()
@@ -299,6 +311,14 @@ class ModelRunner:
                     map_location=device,
                     **model_params,
                 )
+                print("同步 reference_encoder/decoder 参数并冻结  erroer Case")
+                if hasattr(self.model, "reference_encoder") and hasattr(self.model, "reference_decoder"):
+                    self.model.reference_encoder.load_state_dict(self.model.encoder.state_dict())
+                    self.model.reference_decoder.load_state_dict(self.model.decoder.state_dict())
+                    for p in self.model.reference_encoder.parameters():
+                        p.requires_grad = False
+                    for p in self.model.reference_decoder.parameters():
+                        p.requires_grad = False
             except RuntimeError:
                 raise RuntimeError(
                     "Weights file incompatible with the current version of "

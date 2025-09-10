@@ -108,9 +108,10 @@ class DeNovoDataModule(pl.LightningDataModule):
                 self.train_dataset = make_dataset(
                     self.train_index,
                     random_state=self.rng,
+                    negative_samples=False,
                 )
             if self.valid_index is not None:
-                self.valid_dataset = make_dataset(self.valid_index)
+                self.valid_dataset = make_dataset(self.valid_index,negative_samples=False)
         if stage in (None, "test"):
             make_dataset = functools.partial(
                 AnnotatedSpectrumDataset if annotated else SpectrumDataset,
@@ -121,7 +122,7 @@ class DeNovoDataModule(pl.LightningDataModule):
                 remove_precursor_tol=self.remove_precursor_tol,
             )
             if self.test_index is not None:
-                self.test_dataset = make_dataset(self.test_index)
+                self.test_dataset = make_dataset(self.test_index,negative_samples=False)
 
     def _make_loader(
         self,
@@ -264,7 +265,8 @@ def prepare_batch(
         return spectra, precursors, np.asarray(spectrum_ids), np.asarray(neg_sample_ids)
     else:
         return spectra, precursors, np.asarray(spectrum_ids)
-    
+
+
 # def prepare_batch(
 #     batch: List[Tuple[torch.Tensor, float, int, str]]
 # ) -> Tuple[torch.Tensor, torch.Tensor, np.ndarray]:
@@ -303,40 +305,3 @@ def prepare_batch(
 #     ).T.float()
 #     return spectra, precursors, np.asarray(spectrum_ids)
 
-# def prepare_dpo_batch(
-#     batch: List[Tuple[torch.Tensor, float, int, str, str]]
-# ) -> Tuple[torch.Tensor, torch.Tensor, np.ndarray]:
-#     """
-#     Collate MS/MS spectra into a batch.
-
-#     The MS/MS spectra will be padded so that they fit nicely as a tensor.
-#     However, the padded elements are ignored during the subsequent steps.
-
-#     Parameters
-#     ----------
-#     batch : List[Tuple[torch.Tensor, float, int, str]]
-#         A batch of data from an AnnotatedSpectrumDataset, consisting of for each
-#         spectrum (i) a tensor with the m/z and intensity peak values, (ii), the
-#         precursor m/z, (iii) the precursor charge, (iv) the spectrum identifier.
-
-#     Returns
-#     -------
-#     spectra : torch.Tensor of shape (batch_size, n_peaks, 2)
-#         The padded mass spectra tensor with the m/z and intensity peak values
-#         for each spectrum.
-#     precursors : torch.Tensor of shape (batch_size, 3)
-#         A tensor with the precursor neutral mass, precursor charge, and
-#         precursor m/z.
-#     spectrum_ids : np.ndarray
-#         The spectrum identifiers (during de novo sequencing) or peptide
-#         sequences (during training).
-#     """
-#     spectra, precursor_mzs, precursor_charges, spectrum_ids, neg_sample_ids = list(zip(*batch))
-#     spectra = torch.nn.utils.rnn.pad_sequence(spectra, batch_first=True)
-#     precursor_mzs = torch.tensor(precursor_mzs)
-#     precursor_charges = torch.tensor(precursor_charges)
-#     precursor_masses = (precursor_mzs - 1.007276) * precursor_charges
-#     precursors = torch.vstack(
-#         [precursor_masses, precursor_charges, precursor_mzs]
-#     ).T.float()
-#     return spectra, precursors, np.asarray(spectrum_ids), np.asarray(neg_sample_ids)

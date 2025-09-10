@@ -7,7 +7,7 @@ import numpy as np
 import spectrum_utils.spectrum as sus
 import torch
 from torch.utils.data import Dataset
-
+from tqdm import tqdm
 
 class SpectrumDataset(Dataset):
     """
@@ -235,9 +235,11 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
         min_intensity: float = 0.01,
         remove_precursor_tol: float = 2.0,
         random_state: Optional[int] = None,
-        negative_samples: bool = False,
-        neg_sample_csv: Optional[str] = '/mnt/data1/fangzheng/nine/nine-species-balanced/neg_sample_sim_only/neg.csv'
+        negative_samples: bool = True,
+        neg_sample_csv: Optional[str] = '/mnt/data1/fangzheng/nine/nine-species-balanced/neg_sample_mass_only/r50/all_neg_samples.csv'
     ):
+        # /mnt/data1/fangzheng/nine/nine-species-balanced/neg_sample_mass_only/r50/all_neg_samples.csv
+        # '/mnt/data1/fangzheng/nine/nine-species-balanced/neg_sample_sim_only/neg.csv'
         super().__init__(
             annotated_spectrum_index,
             n_peaks=n_peaks,
@@ -256,7 +258,7 @@ class AnnotatedSpectrumDataset(SpectrumDataset):
             neg_dict = load_neg_samples(neg_sample_csv)
             # 生成 index 顺序的负样本 list
             self.neg_samples = []
-            for i in range(len(self)):
+            for i in tqdm(range(len(self))):
                 _, _, _, _, peptide = self.index[i]
                 neg = neg_dict.get(peptide, ('NA', 'NA', 'NA'))
                 self.neg_samples.append(neg)
