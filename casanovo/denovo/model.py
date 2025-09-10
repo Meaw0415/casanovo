@@ -926,9 +926,9 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
 
             # loss = self.lambda_ce * ce_loss + (1 - self.lambda_ce) * dpo_loss
             loss = dpo_loss
-            # print("DPO loss:", loss.item())
+            print("DPO loss:", loss.item())
             self.log(
-                f"{mode}_DPOLoss",
+                f"{mode}_CELoss",
                 loss.detach(),
                 on_step=False,
                 on_epoch=True,
@@ -1039,7 +1039,8 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
         for spectrum_preds in self.forward(batch[0], batch[1]):
             for _, _, pred in spectrum_preds:
                 peptides_pred.append(pred)
-
+        print("Predicted peptides:", peptides_pred[:2])
+        print("True peptides:", peptides_true[:2])
         aa_precision, _, pep_precision = evaluate.aa_match_metrics(
             *evaluate.aa_match_batch(
                 peptides_true,
@@ -1112,12 +1113,10 @@ class Spec2Pep(pl.LightningModule, ModelMixin):
         """
         Log the training loss at the end of each epoch.
         """
-        train_loss0 = self.trainer.callback_metrics["train_CELoss"].detach()
-        train_loss1 = self.trainer.callback_metrics["train_DPOLoss"].detach()
+        train_loss = self.trainer.callback_metrics["train_CELoss"].detach()
         metrics = {
             "step": self.trainer.global_step,
-            "train": train_loss0.item(),
-            "train_dpo": train_loss1.item(),
+            "train": train_loss.item(),
         }
         self._history.append(metrics)
         self._log_history()

@@ -58,7 +58,8 @@ coverage.xml
 *.log
 *.mztab
 *.ckpt
-
+*.sh
+*.yaml
 # Sphinx documentation
 docs/_build/
 

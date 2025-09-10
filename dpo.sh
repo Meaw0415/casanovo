@@ -7,11 +7,11 @@ CUDA_VISIBLE_DEVICES=5 casanovo train --validation_peak_path /mnt/nas/fangzheng/
  /mnt/nas/fangzheng/nine-species-balanced/Vigna-mungo.mgf \
  /mnt/nas/fangzheng/nine-species-balanced/Solanum-lycopersicum.mgf \
  /mnt/nas/fangzheng/nine-species-balanced/Saccharomyces-cerevisiae.mgf \
- --model /mnt/data1/fangzheng/casav4/epoch=23-step=500000.ckpt \
- --config /mnt/data1/fangzheng/casanovo/casanovo/config_dpo.yaml \
+ --model /mnt/iMVR/zhengf/epoch=23-step=500000.ckpt \
+ --config /mnt/iMVR/zhengf/casanovo/casanovo/config_dpo.yaml \
 
 
-# CUDA_VISIBLE_DEVICES=5 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/1.mgf /mnt/nas/fangzheng/nine-species-balanced/2.mgf --model /mnt/nas/fangzheng/mass/ckpt/excl_honeybee.ckpt --config /mnt/data1/fangzheng/casanovo/casanovo/config_dpo.yaml
+# CUDA_VISIBLE_DEVICES=5 casanovo train --validation_peak_path /mnt/nas/fangzheng/nine-species-balanced/1.mgf /mnt/nas/fangzheng/nine-species-balanced/2.mgf  --model /mnt/iMVR/zhengf/epoch=23-step=500000.ckpt --config /mnt/iMVR/zhengf/casanovo/casanovo/config_dpo.yaml
 #   \
 #   \
 #   \

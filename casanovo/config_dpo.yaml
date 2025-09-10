@@ -39,16 +39,16 @@ random_seed: 454
 
 # OUTPUT OPTIONS
 # Logging frequency in training steps.
-n_log: 100
+n_log: 1
 # Tensorboard directory to use for keeping track of training metrics.
 tb_summarywriter:
 # Save the top k model checkpoints during training. -1 saves all, and leaving
 # this field empty saves none.
 save_top_k: 5
 # Path to saved checkpoints.
-model_save_folder_path: "/mnt/data1/fangzheng/casav4/ckpt_5000"
+model_save_folder_path: "/mnt/iMVR/zhengf/output"
 # Model validation and checkpointing frequency in training steps.  211714
-val_check_interval: 20000
+val_check_interval: 10
 
 # SPECTRUM PROCESSING OPTIONS
 # Number of the most intense peaks to retain, any remaining peaks are discarded.
@@ -85,7 +85,7 @@ warmup_iters: 100_000
 # The number of iterations for the cosine half period of the learning rate.
 cosine_schedule_period_iters: 600_000
 # Learning rate for weight updates during training.
-learning_rate: 5e-6
+learning_rate: 5e-4
 # Regularization term for weight updates.
 weight_decay: 1e-5
 # Amount of label smoothing when computing the training loss.
